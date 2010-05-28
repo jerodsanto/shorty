@@ -1,4 +1,8 @@
 require 'rubygems'
+require 'bundler'
+
+Bundler.setup
+
 require 'shorty'
 require 'test/unit'
 require 'rack/test'
