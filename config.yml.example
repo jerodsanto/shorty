@@ -1,0 +1,20 @@
+defaults: &defaults
+  mongo_host: 'localhost'
+  mongo_port: 27017
+  short_domain: 'http://localhost:9393'
+  default_redirect: 'http://www.google.com'
+  access_key: "wm639kp5ucxc49feq9ifawsswsj4cf9r0mi753fx"
+
+development:
+  <<: *defaults
+  mongo_db: 'shorty_dev'
+
+test:
+  <<: *defaults
+  mongo_db: 'shorty_dev'
+
+production:
+  <<: *defaults
+  mongo_db: 'shorty_prod'
+  short_domain: 'http://fuel.bz'
+  default_redirect: 'http://www.fuelbrandnetwork.com'
