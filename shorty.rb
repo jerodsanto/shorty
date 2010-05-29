@@ -1,32 +1,12 @@
 require 'sinatra'
 require 'mongoid'
 
-RACK_ENV = 'development' unless defined? RACK_ENV
-CONFIG   = YAML.load_file("config.yml")[RACK_ENV] rescue raise(LoadError, "invalid or missing config.yml")
-
-Mongoid.database = Mongo::Connection.new(CONFIG['mongo_host'],CONFIG['mongo_port']).db(CONFIG['mongo_db'])
-
-class Link
-  include Mongoid::Document
-  include Mongoid::Timestamps
-  embeds_many :referrers
-
-  field :url
-  field :shorty
-  index :shorty
-
-  validates_uniqueness_of :url, :shorty
-end
-
-class Referrer
-  include Mongoid::Document
-  include Mongoid::Timestamps
-  embedded_in :link, :inverse_of => :referrers
-
-  field :url
-end
-
 class Shorty < Sinatra::Base
+  configure do
+    CONFIG = YAML.load_file("config.yml")[ENV['RACK_ENV']] rescue raise(LoadError, "problem with config.yml")
+    Mongoid.database = Mongo::Connection.new(CONFIG['mongo_host'],CONFIG['mongo_port']).db(CONFIG['mongo_db'])
+  end
+
   helpers do
     def generate_short_code
       chars = ['A'..'Z', 'a'..'z', '0'..'9'].map{ |r| r.to_a }.flatten
@@ -65,4 +45,24 @@ class Shorty < Sinatra::Base
 
     "#{CONFIG['short_domain']}/#{link.shorty}"
   end
+end
+
+class Link
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  embeds_many :referrers
+
+  field :url
+  field :shorty
+  index :shorty
+
+  validates_uniqueness_of :url, :shorty
+end
+
+class Referrer
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  embedded_in :link, :inverse_of => :referrers
+
+  field :url
 end

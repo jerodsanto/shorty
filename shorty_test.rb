@@ -3,11 +3,11 @@ require 'bundler'
 
 Bundler.setup
 
+ENV['RACK_ENV'] = 'test'
+
 require 'shorty'
 require 'test/unit'
 require 'rack/test'
-
-set :environment, :test
 
 class ShortyTest < Test::Unit::TestCase
   include Rack::Test::Methods
@@ -29,13 +29,13 @@ class ShortyTest < Test::Unit::TestCase
   def test_it_redirects_to_default_on_root_get
     get '/'
     assert last_response.status == 302
-    assert last_response.headers["Location"] == CONFIG["default_redirect"]
+    assert last_response.headers["Location"] == Shorty::CONFIG["default_redirect"]
   end
 
   def test_it_redirects_to_default_on_shorty_miss
     get '/this-will-miss'
     assert last_response.status == 302
-    assert last_response.headers["Location"] == CONFIG["default_redirect"]
+    assert last_response.headers["Location"] == Shorty::CONFIG["default_redirect"]
   end
 
   def test_it_redirects_to_long_url_on_shorty_hit
@@ -50,14 +50,14 @@ class ShortyTest < Test::Unit::TestCase
   end
 
   def test_it_returns_existing_short_url_on_post_with_existing_url
-    post '/', :url => @test_url, :key => CONFIG["access_key"]
+    post '/', :url => @test_url, :key => Shorty::CONFIG["access_key"]
     assert last_response.status == 200
-    assert last_response.body == CONFIG["short_domain"] + "/#{@test_shorty}"
+    assert last_response.body == Shorty::CONFIG["short_domain"] + "/#{@test_shorty}"
   end
 
   def test_it_creates_new_shorty_on_post_with_new_url
-    post '/', :url => "http://fuelyourcoding.com", :key => CONFIG["access_key"]
+    post '/', :url => "http://fuelyourcoding.com", :key => Shorty::CONFIG["access_key"]
     assert last_response.status == 200
-    assert last_response.body =~ /#{CONFIG["short_domain"]}\/\w{3}/
+    assert last_response.body =~ /#{Shorty::CONFIG["short_domain"]}\/\w{3}/
   end
 end
