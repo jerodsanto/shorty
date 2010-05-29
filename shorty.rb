@@ -28,10 +28,6 @@ end
 
 class Shorty < Sinatra::Base
   helpers do
-    def redirect_to_default
-      redirect CONFIG['default_redirect']
-    end
-
     def generate_short_code
       chars = ['A'..'Z', 'a'..'z', '0'..'9'].map{ |r| r.to_a }.flatten
       Array.new(3).map{ chars[rand(chars.size)] }.join
@@ -39,14 +35,14 @@ class Shorty < Sinatra::Base
   end
 
   get '/' do
-    redirect_to_default
+    redirect CONFIG['default_redirect']
   end
 
   get '/:shorty' do
     link = Link.where(:shorty => params[:shorty]).first
 
     if link.nil?
-      redirect_to_default
+      redirect CONFIG['default_redirect']
     else
       referrer = Referrer.new(:url => @request.env['HTTP_REFERRER'])
       link.referrers << referrer
@@ -64,8 +60,7 @@ class Shorty < Sinatra::Base
       begin
         shorty = generate_short_code
       end while Link.where(:shorty => shorty).size > 0
-      link = Link.new(:url => params[:url], :shorty => shorty)
-      link.save
+      link = Link.create(:url => params[:url], :shorty => shorty)
     end
 
     "#{CONFIG['short_domain']}/#{link.shorty}"
