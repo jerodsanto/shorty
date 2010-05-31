@@ -26,6 +26,12 @@ class ShortyTest < Test::Unit::TestCase
     Shorty
   end
 
+  def basic_auth(user="user", password="test")
+    credentials = ["#{user}:#{password}"].pack("m*")
+
+    { "HTTP_AUTHORIZATION" => "Basic #{credentials}" }
+  end
+
   def test_it_redirects_to_default_on_root_get
     get '/'
     assert last_response.status == 302
@@ -59,5 +65,21 @@ class ShortyTest < Test::Unit::TestCase
     post '/', :url => "http://fuelyourcoding.com", :key => Shorty::CONFIG["access_key"]
     assert last_response.status == 200
     assert last_response.body =~ /#{Shorty::CONFIG["short_domain"]}\/\w{3}/
+  end
+
+  def test_it_requires_basic_authentication_for_link_stats
+    get "/#{@test_shorty}/stats"
+    assert last_response.status == 401
+  end
+
+  def test_it_requires_proper_credentials_for_link_stats
+    get "/#{@test_shorty}/stats", {}, basic_auth("bad", "nope")
+    assert last_response.status == 401
+  end
+
+  def test_it_displays_stats_page_after_authentication_for_link_stats
+    get "/#{@test_shorty}/stats", {}, basic_auth(Shorty::CONFIG["admin_login"],Shorty::CONFIG["admin_pass"])
+    assert last_response.status == 200
+    assert last_response.body =~ /Stats/
   end
 end

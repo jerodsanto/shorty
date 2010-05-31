@@ -1,13 +1,22 @@
 require 'sinatra'
+require 'lib/authorization'
+require 'haml'
 require 'mongoid'
 
 class Shorty < Sinatra::Base
   configure do
     CONFIG = YAML.load_file("config.yml")[ENV['RACK_ENV']] rescue raise(LoadError, "problem with config.yml")
     Mongoid.database = Mongo::Connection.new(CONFIG['mongo_host'],CONFIG['mongo_port']).db(CONFIG['mongo_db'])
+    set :authorization_realm, "Admins Only"
   end
 
   helpers do
+    include Sinatra::Authorization
+
+    def authorize(login, password)
+      login == CONFIG['admin_login'] && password == CONFIG['admin_pass']
+    end
+
     def generate_short_code
       chars = ['A'..'Z', 'a'..'z', '0'..'9'].map{ |r| r.to_a }.flatten
       Array.new(3).map{ chars[rand(chars.size)] }.join
@@ -21,14 +30,21 @@ class Shorty < Sinatra::Base
   get '/:shorty' do
     link = Link.where(:shorty => params[:shorty]).first
 
-    if link.nil?
-      redirect CONFIG['default_redirect']
-    else
-      referrer = Referrer.new(:url => @request.env['HTTP_REFERRER'])
-      link.referrers << referrer
-      referrer.save
-      redirect link.url
-    end
+    redirect CONFIG['default_redirect'] if link.nil?
+
+    referrer = Referrer.new(:url => @request.env['HTTP_REFERRER'])
+    link.referrers << referrer
+    referrer.save
+    redirect link.url
+  end
+
+  get '/:shorty/stats' do
+    login_required
+    @link = Link.where(:shorty => params[:shorty]).first
+
+    redirect CONFIG['default_redirect'] if @link.nil?
+
+    haml :stats
   end
 
   post '/' do
