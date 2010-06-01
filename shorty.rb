@@ -87,4 +87,9 @@ class Referer
   embedded_in :link, :inverse_of => :referers
 
   field :url
+
+  def domain
+    return "unknown" if url.nil?
+    URI.parse(url).host
+  end
 end

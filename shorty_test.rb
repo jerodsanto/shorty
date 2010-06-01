@@ -89,9 +89,21 @@ class ShortyTest < Test::Unit::TestCase
     get "/#{@test_shorty}", {}, { "HTTP_REFERER" => "http://twitter.com" }
 
     referers = Link.where(:shorty => @test_shorty).first.referers
-    puts referers.inspect
     assert referers.first.url == "http://www.google.com"
     assert referers.last.url == "http://twitter.com"
     assert referers.count == 3
+  end
+
+  def test_it_aggregates_referers
+    get "/#{@test_shorty}", {}, { "HTTP_REFERER" => "http://www.google.com/search?q=blah" }
+    get "/#{@test_shorty}", {}, { "HTTP_REFERER" => "http://www.google.com/search?q=jerod" }
+    get "/#{@test_shorty}"
+
+    referers = Link.where(:shorty => @test_shorty).first.referers
+    assert referers.first.domain == "www.google.com"
+    assert referers.last.domain == "unknown"
+    grouped = referers.group_by(&:domain)
+    assert grouped["www.google.com"].count == 2
+    assert grouped["unknown"].count == 1
   end
 end

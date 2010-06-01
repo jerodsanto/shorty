@@ -7,5 +7,5 @@
     %h2= "Clicks: #{@link.referers.count}"
     %h2 Referers:
     %ul
-      - @link.referers.each do |referer|
-        %li= referer.url
+      - @link.referers.group_by(&:domain).each do |domain, referers|
+        %li= "(#{referers.count}) #{domain}"
