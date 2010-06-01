@@ -4,6 +4,8 @@ defaults: &defaults
   short_domain: 'http://localhost:9393'
   default_redirect: 'http://www.google.com'
   access_key: "wm639kp5ucxc49feq9ifawsswsj4cf9r0mi753fx"
+  admin_login: "admin"
+  admin_pass: "onetwobucklemyshoe"
 
 development:
   <<: *defaults
