@@ -4,8 +4,8 @@
     %title= "Stats for #{@link.url}"
   %body
     %h1= @link.url
-    %h2= "Clicks: #{@link.referrers.count}"
-    %h2 Referrers:
+    %h2= "Clicks: #{@link.referers.count}"
+    %h2 Referers:
     %ul
-      - @link.referrers.each do |referrer|
-        %li= referrer.url
+      - @link.referers.each do |referer|
+        %li= referer.url

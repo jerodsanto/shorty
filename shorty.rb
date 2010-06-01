@@ -38,9 +38,9 @@ class Shorty < Sinatra::Base
 
     redirect CONFIG['default_redirect'] if link.nil?
 
-    referrer = Referrer.new(:url => @request.env['HTTP_REFERRER'])
-    link.referrers << referrer
-    referrer.save
+    referer = Referer.new(:url => @request.env['HTTP_REFERER'])
+    link.referers << referer
+    referer.save
     hard_redirect link.url
   end
 
@@ -72,7 +72,7 @@ end
 class Link
   include Mongoid::Document
   include Mongoid::Timestamps
-  embeds_many :referrers
+  embeds_many :referers
 
   field :url
   field :shorty
@@ -81,10 +81,10 @@ class Link
   validates_uniqueness_of :url, :shorty
 end
 
-class Referrer
+class Referer
   include Mongoid::Document
   include Mongoid::Timestamps
-  embedded_in :link, :inverse_of => :referrers
+  embedded_in :link, :inverse_of => :referers
 
   field :url
 end
