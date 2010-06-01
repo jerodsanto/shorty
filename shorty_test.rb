@@ -82,4 +82,16 @@ class ShortyTest < Test::Unit::TestCase
     assert last_response.status == 200
     assert last_response.body =~ /Stats/
   end
+
+  def test_it_adds_referers
+    get "/#{@test_shorty}", {}, { "HTTP_REFERER" => "http://www.google.com" }
+    get "/#{@test_shorty}"
+    get "/#{@test_shorty}", {}, { "HTTP_REFERER" => "http://twitter.com" }
+
+    referers = Link.where(:shorty => @test_shorty).first.referers
+    puts referers.inspect
+    assert referers.first.url == "http://www.google.com"
+    assert referers.last.url == "http://twitter.com"
+    assert referers.count == 3
+  end
 end
