@@ -32,21 +32,21 @@ class ShortyTest < Test::Unit::TestCase
     { "HTTP_AUTHORIZATION" => "Basic #{credentials}" }
   end
 
-  def test_it_redirects_to_default_on_root_get
+  def test_it_soft_redirects_to_default_on_root_get
     get '/'
     assert last_response.status == 302
     assert last_response.headers["Location"] == Shorty::CONFIG["default_redirect"]
   end
 
-  def test_it_redirects_to_default_on_shorty_miss
+  def test_it_soft_redirects_to_default_on_shorty_miss
     get '/this-will-miss'
     assert last_response.status == 302
     assert last_response.headers["Location"] == Shorty::CONFIG["default_redirect"]
   end
 
-  def test_it_redirects_to_long_url_on_shorty_hit
+  def test_it_hard_redirects_to_long_url_on_shorty_hit
     get "/#{@test_shorty}"
-    assert last_response.status == 302
+    assert last_response.status == 301
     assert last_response.headers["Location"] == @test_url
   end
 

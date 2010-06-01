@@ -21,6 +21,12 @@ class Shorty < Sinatra::Base
       chars = ['A'..'Z', 'a'..'z', '0'..'9'].map{ |r| r.to_a }.flatten
       Array.new(3).map{ chars[rand(chars.size)] }.join
     end
+
+    def hard_redirect(uri, *args)
+      status 301
+      response['Location'] = uri
+      halt(*args)
+    end
   end
 
   get '/' do
@@ -35,7 +41,7 @@ class Shorty < Sinatra::Base
     referrer = Referrer.new(:url => @request.env['HTTP_REFERRER'])
     link.referrers << referrer
     referrer.save
-    redirect link.url
+    hard_redirect link.url
   end
 
   get '/:shorty/stats' do
